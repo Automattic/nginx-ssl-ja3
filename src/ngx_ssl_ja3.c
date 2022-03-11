@@ -319,8 +319,8 @@ ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
         return NGX_DECLINED;
     }
 
-    /* SSLVersion*/
-    ja3->version = SSL_version(ssl);
+    /* SSLVersion - we want to use the version reported by the client*/
+    ja3->version = SSL_client_version(ssl);
 
     /* Cipher suites */
     ja3->ciphers = NULL;
