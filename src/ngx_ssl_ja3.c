@@ -104,7 +104,18 @@ ngx_ssl_ja3_nid_to_cid(int nid)
         }
     }
 
-    return nid;
+    /* 
+	 * OpenSSL doesn't really parse the NID for all groups supported in extensions.
+	 * Its curve ID to NID code is done by tls1_group_id_lookup ssl/t1_lib.c and it
+	 * covers groups specified in RFC 4492  while it ignores groups introduced by
+	 * RFC 7919.  
+	 * 
+	 * If OpenSSL can't parse the NID for a curve, i.e. the curve is not in RFC 4492,
+	 * it returns the "binary OR" of 0x1000000 and the ID of the curve from the TLS packet
+	 * Hence, for those curves that don't have a valid NID, we can get the ID simply by
+	 * undoing the "binary OR".
+	 */
+	return (0x0FFFFFF & nid);
 }
 
 static size_t
