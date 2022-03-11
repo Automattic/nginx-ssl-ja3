@@ -121,14 +121,9 @@ ngx_ssl_ja3_nid_to_cid(int nid)
 static size_t
 ngx_ssj_ja3_num_digits(int n)
 {
-    int c = 0;
-    if (n < 9) {
-        return 1;
-    }
-    for (; n; n /= 10) {
-        ++c;
-    }
-    return c;
+    int digits = 1;
+    for (; n /= 10; digits++);
+    return digits;
 }
 
 
