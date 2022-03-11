@@ -1,0 +1,56 @@
+diff --git a/include/openssl/tls1.h b/include/openssl/tls1.h
+index 76d9fda46e..7389d4a4c3 100644
+--- a/include/openssl/tls1.h
++++ b/include/openssl/tls1.h
+@@ -131,6 +131,11 @@ extern "C" {
+ /* ExtensionType value from RFC7627 */
+ # define TLSEXT_TYPE_extended_master_secret      23
+ 
++/* [draft-ietf-tls-certificate-compression] */
++# define TLSEXT_TYPE_compress_certificate        27
++/* ExtensionType value from RFC8449 */
++# define TLSEXT_TYPE_record_size_limit           28
++
+ /* ExtensionType value from RFC4507 */
+ # define TLSEXT_TYPE_session_ticket              35
+ 
+diff --git a/ssl/ssl_local.h b/ssl/ssl_local.h
+index 9f346e30e8..cdb2b60022 100644
+--- a/ssl/ssl_local.h
++++ b/ssl/ssl_local.h
+@@ -714,6 +714,8 @@ typedef enum tlsext_index_en {
+     TLSEXT_IDX_cryptopro_bug,
+     TLSEXT_IDX_early_data,
+     TLSEXT_IDX_certificate_authorities,
++    TLSEXT_IDX_compress_certificate,
++    TLSEXT_IDX_record_size_limit,
+     TLSEXT_IDX_padding,
+     TLSEXT_IDX_psk,
+     /* Dummy index - must always be the last entry */
+diff --git a/ssl/statem/extensions.c b/ssl/statem/extensions.c
+index 0f39275baa..8bca6e8e4e 100644
+--- a/ssl/statem/extensions.c
++++ b/ssl/statem/extensions.c
+@@ -377,6 +377,22 @@ static const EXTENSION_DEFINITION ext_defs[] = {
+         tls_construct_certificate_authorities,
+         tls_construct_certificate_authorities, NULL,
+     },
++    {
++        TLSEXT_TYPE_compress_certificate,
++        SSL_EXT_CLIENT_HELLO,
++        NULL,
++        NULL, NULL,
++        NULL,
++        NULL, NULL,
++    },
++    {
++        TLSEXT_TYPE_record_size_limit,
++        SSL_EXT_CLIENT_HELLO,
++        NULL,
++        NULL, NULL,
++        NULL,
++        NULL, NULL,
++    },
+     {
+         /* Must be immediately before pre_shared_key */
+         TLSEXT_TYPE_padding,
