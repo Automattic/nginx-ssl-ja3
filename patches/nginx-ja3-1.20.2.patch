@@ -2,7 +2,7 @@ diff --git a/src/event/ngx_event_openssl.c b/src/event/ngx_event_openssl.c
 index b64285ab..9427249c 100644
 --- a/src/event/ngx_event_openssl.c
 +++ b/src/event/ngx_event_openssl.c
-@@ -1742,6 +1742,107 @@ ngx_ssl_set_session(ngx_connection_t *c, ngx_ssl_session_t *session)
+@@ -1742,6 +1742,108 @@ ngx_ssl_set_session(ngx_connection_t *c, ngx_ssl_session_t *session)
      return NGX_OK;
  }
  
@@ -15,6 +15,7 @@ index b64285ab..9427249c 100644
 +    unsigned short                *ciphers_out = NULL;
 +    int                           *curves_out = NULL;
 +    unsigned char                 *point_formats_out = NULL;
++    size_t                        i;
 +    size_t                        len = 0;
 +    SSL                           *s = NULL;
 +
@@ -43,7 +44,7 @@ index b64285ab..9427249c 100644
 +            len = c->ssl->curves_sz * sizeof(unsigned short);
 +            c->ssl->curves = ngx_pnalloc(c->pool, len);
 +            if (c->ssl->curves != NULL) {
-+                for (size_t i = 0; i < c->ssl->curves_sz; i++) {
++                for (i = 0; i < c->ssl->curves_sz; i++) {
 +                     c->ssl->curves[i] = curves_out[i];
 +                }
 +            }

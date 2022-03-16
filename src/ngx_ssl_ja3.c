@@ -50,7 +50,8 @@ static const unsigned short GREASE[] = {
 static int
 ngx_ssl_ja3_is_ext_greased(int id)
 {
-    for (size_t i = 0; i < (sizeof(GREASE) / sizeof(GREASE[0])); ++i) {
+    size_t i;
+    for (i = 0; i < (sizeof(GREASE) / sizeof(GREASE[0])); ++i) {
         if (id == GREASE[i]) {
             return 1;
         }
@@ -96,9 +97,10 @@ static const int nid_list[] = {
 static unsigned short
 ngx_ssl_ja3_nid_to_cid(int nid)
 {
+    unsigned char i;
     unsigned char sz = (sizeof(nid_list) / sizeof(nid_list[0]));
 
-    for (unsigned char i = 0; i < sz; i++) {
+    for (i = 0; i < sz; i++) {
         if (nid == nid_list[i]) {
             return i+1;
         }
@@ -131,6 +133,7 @@ ngx_ssj_ja3_num_digits(int n)
 static void
 ngx_ssl_ja3_detail_print(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3)
 {
+    size_t i;
     /* Version */
     ngx_log_debug1(NGX_LOG_DEBUG_EVENT,
                    pool->log, 0, "ssl_ja3: Version:  %d\n", ja3->version);
@@ -140,7 +143,7 @@ ngx_ssl_ja3_detail_print(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3)
                    pool->log, 0, "ssl_ja3: ciphers: length: %d\n",
                    ja3->ciphers_sz);
 
-    for (size_t i = 0; i < ja3->ciphers_sz; ++i) {
+    for (i = 0; i < ja3->ciphers_sz; ++i) {
         ngx_log_debug2(NGX_LOG_DEBUG_EVENT,
                        pool->log, 0, "ssl_ja3: |    cipher: 0x%04uxD -> %d",
                        ja3->ciphers[i],
@@ -153,7 +156,7 @@ ngx_ssl_ja3_detail_print(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3)
                    pool->log, 0, "ssl_ja3: extensions: length: %d\n",
                    ja3->extensions_sz);
 
-    for (size_t i = 0; i < ja3->extensions_sz; ++i) {
+    for (i = 0; i < ja3->extensions_sz; ++i) {
         ngx_log_debug2(NGX_LOG_DEBUG_EVENT,
                        pool->log, 0, "ssl_ja3: |    extension: 0x%04uxD -> %d",
                        ja3->extensions[i],
@@ -166,7 +169,7 @@ ngx_ssl_ja3_detail_print(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3)
                    pool->log, 0, "ssl_ja3: curves: length: %d\n",
                    ja3->curves_sz);
 
-    for (size_t i = 0; i < ja3->curves_sz; ++i) {
+    for (i = 0; i < ja3->curves_sz; ++i) {
         ngx_log_debug2(NGX_LOG_DEBUG_EVENT,
                        pool->log, 0, "ssl_ja3: |    curves: 0x%04uxD -> %d",
                        ja3->curves[i],
@@ -178,7 +181,7 @@ ngx_ssl_ja3_detail_print(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3)
     ngx_log_debug1(NGX_LOG_DEBUG_EVENT,
                    pool->log, 0, "ssl_ja3: formats: length: %d\n",
                    ja3->point_formats_sz);
-    for (size_t i = 0; i < ja3->point_formats_sz; ++i) {
+    for (i = 0; i < ja3->point_formats_sz; ++i) {
         ngx_log_debug1(NGX_LOG_DEBUG_EVENT,
                        pool->log, 0, "ssl_ja3: |    format: %d",
                        ja3->point_formats[i]
@@ -191,6 +194,7 @@ ngx_ssl_ja3_detail_print(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3)
 void
 ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
 {
+    size_t                    i;
     size_t                    len = 0, cur = 0;
 
     if (pool == NULL || ja3 == NULL || out == NULL) {
@@ -201,7 +205,7 @@ ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
     ++len;                                                  /* ',' separator */
 
     if (ja3->ciphers_sz) {
-        for (size_t i = 0; i < ja3->ciphers_sz; ++i) {
+        for (i = 0; i < ja3->ciphers_sz; ++i) {
             len += ngx_ssj_ja3_num_digits(ja3->ciphers[i]); /* cipher [i] */
         }
         len += (ja3->ciphers_sz - 1);                       /* '-' separators */
@@ -209,7 +213,7 @@ ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
     ++len;                                                  /* ',' separator */
 
     if (ja3->extensions_sz) {
-        for (size_t i = 0; i < ja3->extensions_sz; ++i) {
+        for (i = 0; i < ja3->extensions_sz; ++i) {
             len += ngx_ssj_ja3_num_digits(ja3->extensions[i]); /* ext [i] */
         }
         len += (ja3->extensions_sz - 1);                   /* '-' separators */
@@ -217,7 +221,7 @@ ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
     ++len;                                                  /* ',' separator */
 
     if (ja3->curves_sz) {
-        for (size_t i = 0; i < ja3->curves_sz; ++i) {
+        for (i = 0; i < ja3->curves_sz; ++i) {
             len += ngx_ssj_ja3_num_digits(ja3->curves[i]); /* curves [i] */
         }
         len += (ja3->curves_sz - 1);                       /* '-' separators */
@@ -225,7 +229,7 @@ ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
     ++len;                                                  /* ',' separator */
 
     if (ja3->point_formats_sz) {
-        for (size_t i = 0; i < ja3->point_formats_sz; ++i) {
+        for (i = 0; i < ja3->point_formats_sz; ++i) {
             len += ngx_ssj_ja3_num_digits(ja3->point_formats[i]); /* fmt [i] */
         }
         len += (ja3->point_formats_sz - 1);                 /* '-' separators */
@@ -239,7 +243,7 @@ ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
     cur += len;
 
     if (ja3->ciphers_sz) {
-        for (size_t i = 0; i < ja3->ciphers_sz; ++i) {
+        for (i = 0; i < ja3->ciphers_sz; ++i) {
             if (i > 0) {
                 ngx_snprintf(out->data + (cur++), 1, "-");
             }
@@ -251,7 +255,7 @@ ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
     ngx_snprintf(out->data + (cur++), 1, ",");
 
     if (ja3->extensions_sz) {
-        for (size_t i = 0; i < ja3->extensions_sz; i++) {
+        for (i = 0; i < ja3->extensions_sz; i++) {
             if (i > 0) {
                 ngx_snprintf(out->data + (cur++), 1, "-");
             }
@@ -263,7 +267,7 @@ ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
     ngx_snprintf(out->data + (cur++), 1, ",");
 
     if (ja3->curves_sz) {
-        for (size_t i = 0; i < ja3->curves_sz; i++) {
+        for (i = 0; i < ja3->curves_sz; i++) {
             if (i > 0) {
                 ngx_snprintf(out->data + (cur++), 1, "-");
             }
@@ -275,7 +279,7 @@ ngx_ssl_ja3_fp(ngx_pool_t *pool, ngx_ssl_ja3_t *ja3, ngx_str_t *out)
     ngx_snprintf(out->data + (cur++), 1, ",");
 
     if (ja3->point_formats_sz) {
-        for (size_t i = 0; i < ja3->point_formats_sz; i++) {
+        for (i = 0; i < ja3->point_formats_sz; i++) {
             if (i > 0) {
                 ngx_snprintf(out->data + (cur++), 1, "-");
             }
@@ -303,6 +307,7 @@ int
 ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
 
     SSL                           *ssl;
+    size_t                         i;
     size_t                         len = 0;
     unsigned short                 us = 0;
 
@@ -333,7 +338,7 @@ ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
             return NGX_DECLINED;
         }
         /* Filter out GREASE extensions */
-        for (size_t i = 0; i < c->ssl->ciphers_sz; ++i) {
+        for (i = 0; i < c->ssl->ciphers_sz; ++i) {
             us = ntohs(c->ssl->ciphers[i]);
             if (! ngx_ssl_ja3_is_ext_greased(us)) {
                 ja3->ciphers[ja3->ciphers_sz++] = us;
@@ -350,7 +355,7 @@ ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
         if (ja3->extensions == NULL) {
             return NGX_DECLINED;
         }
-        for (size_t i = 0; i < c->ssl->extensions_size; ++i) {
+        for (i = 0; i < c->ssl->extensions_size; ++i) {
             if (! ngx_ssl_ja3_is_ext_greased(c->ssl->extensions[i])) {
                 ja3->extensions[ja3->extensions_sz++] = c->ssl->extensions[i];
             }
@@ -366,7 +371,7 @@ ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
         if (ja3->curves == NULL) {
             return NGX_DECLINED;
         }
-        for (size_t i = 0; i < c->ssl->curves_sz; i++) {
+        for (i = 0; i < c->ssl->curves_sz; i++) {
             us = ntohs(c->ssl->curves[i]);
             if (! ngx_ssl_ja3_is_ext_greased(us)) {
                 ja3->curves[ja3->curves_sz++] = ngx_ssl_ja3_nid_to_cid(c->ssl->curves[i]);
