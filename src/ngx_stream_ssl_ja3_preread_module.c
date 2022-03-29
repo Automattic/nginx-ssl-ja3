@@ -137,12 +137,12 @@ ngx_stream_ssl_ja3(ngx_stream_session_t *s,
 
 static ngx_stream_variable_t  ngx_stream_ssl_ja3_variables_list[] = {
 
-    {   ngx_string("stream_ssl_ja3_hash"),
+    {   ngx_string("tls_ja3_hash"),
         NULL,
         ngx_stream_ssl_ja3_hash,
         0, 0, 0
     },
-    {   ngx_string("stream_ssl_ja3"),
+    {   ngx_string("tls_ja3"),
         NULL,
         ngx_stream_ssl_ja3,
         0, 0, 0

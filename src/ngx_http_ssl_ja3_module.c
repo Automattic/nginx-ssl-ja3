@@ -139,12 +139,12 @@ ngx_http_ssl_ja3(ngx_http_request_t *r,
 
 static ngx_http_variable_t  ngx_http_ssl_ja3_variables_list[] = {
 
-    {   ngx_string("http_ssl_ja3_hash"),
+    {   ngx_string("tls_ja3_hash"),
         NULL,
         ngx_http_ssl_ja3_hash,
         0, 0, 0
     },
-    {   ngx_string("http_ssl_ja3"),
+    {   ngx_string("tls_ja3"),
         NULL,
         ngx_http_ssl_ja3,
         0, 0, 0
