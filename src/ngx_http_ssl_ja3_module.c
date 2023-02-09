@@ -62,6 +62,10 @@ ngx_module_t ngx_http_ssl_ja3_module = {
     NGX_MODULE_V1_PADDING
 };
 
+int cmp_unsigned_short (const void *a, const void *b) {
+    return ( * (unsigned short *)a - * (unsigned short *)b );
+}
+
 static ngx_int_t
 ngx_http_ssl_ja3_hash(ngx_http_request_t *r,
         ngx_http_variable_value_t *v, uintptr_t data)
@@ -137,6 +141,83 @@ ngx_http_ssl_ja3(ngx_http_request_t *r,
     return NGX_OK;
 }
 
+static ngx_int_t
+ngx_http_ssl_ja3_hash_sorted(ngx_http_request_t *r,
+        ngx_http_variable_value_t *v, uintptr_t data)
+{
+    ngx_ssl_ja3_t                  ja3;
+    ngx_str_t                      fp = ngx_null_string;
+
+    ngx_md5_t                      ctx;
+    u_char                         hash[17] = {0};
+
+    if (r->connection == NULL) {
+        return NGX_OK;
+    }
+
+    v->data = ngx_pcalloc(r->pool, 32);
+
+    if (v->data == NULL) {
+        return NGX_ERROR;
+    }
+
+    if (ngx_ssl_ja3(r->connection, r->pool, &ja3) == NGX_DECLINED) {
+        return NGX_ERROR;
+    }
+
+    ngx_qsort(ja3.extensions, ja3.extensions_sz, sizeof(unsigned short), cmp_unsigned_short );
+    ngx_ssl_ja3_fp(r->pool, &ja3, &fp);
+
+    ngx_md5_init(&ctx);
+    ngx_md5_update(&ctx, fp.data, fp.len);
+    ngx_md5_final(hash, &ctx);
+    ngx_hex_dump(v->data, hash, 16);
+
+    v->len = 32;
+    v->valid = 1;
+    v->no_cacheable = 1;
+    v->not_found = 0;
+
+#if (NGX_DEBUG)
+    {
+        u_char                         hash_hex[33] = {0};
+        ngx_memcpy(hash_hex, v->data, 32);
+
+        ngx_log_debug1(NGX_LOG_DEBUG_EVENT,
+                       r->connection->pool->log, 0, "ssl_ja3: http: hash: [%s]\n", hash_hex);
+    }
+#endif
+
+    return NGX_OK;
+}
+
+static ngx_int_t
+ngx_http_ssl_ja3_sorted(ngx_http_request_t *r,
+        ngx_http_variable_value_t *v, uintptr_t data)
+{
+    ngx_ssl_ja3_t                  ja3;
+    ngx_str_t                      fp = ngx_null_string;
+
+    if (r->connection == NULL) {
+        return NGX_OK;
+    }
+
+    if (ngx_ssl_ja3(r->connection, r->pool, &ja3) == NGX_DECLINED) {
+        return NGX_ERROR;
+    }
+
+    ngx_qsort(ja3.extensions, ja3.extensions_sz, sizeof(unsigned short), cmp_unsigned_short );
+    ngx_ssl_ja3_fp(r->pool, &ja3, &fp);
+
+    v->data = fp.data;
+    v->len = fp.len;
+    v->valid = 1;
+    v->no_cacheable = 1;
+    v->not_found = 0;
+
+    return NGX_OK;
+}
+
 static ngx_http_variable_t  ngx_http_ssl_ja3_variables_list[] = {
 
     {   ngx_string("tls_ja3_hash"),
@@ -144,9 +225,19 @@ static ngx_http_variable_t  ngx_http_ssl_ja3_variables_list[] = {
         ngx_http_ssl_ja3_hash,
         0, 0, 0
     },
+    {   ngx_string("tls_ja3_hash_sorted"),
+        NULL,
+        ngx_http_ssl_ja3_hash_sorted,
+        0, 0, 0
+    },
     {   ngx_string("tls_ja3"),
         NULL,
         ngx_http_ssl_ja3,
+        0, 0, 0
+    },
+    {   ngx_string("tls_ja3_sorted"),
+        NULL,
+        ngx_http_ssl_ja3_sorted,
         0, 0, 0
     },
 
