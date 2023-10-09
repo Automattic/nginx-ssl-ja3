@@ -1,4 +1,4 @@
-# nginx-ssl-ja3  [![Build Status](https://travis-ci.org/fooinha/nginx-ssl-ja3.svg?branch=master)](https://travis-ci.org/fooinha/nginx-ssl-ja3)
+# nginx-ssl-ja3  [![Build Status](https://app.travis-ci.com/fooinha/nginx-ssl-ja3.svg?branch=master)](https://app.travis-ci.com/github/fooinha/nginx-ssl-ja3)
 
 nginx module for SSL/TLS ja3 fingerprint.
 
@@ -12,7 +12,8 @@ For details about the ja3 fingerprint algorithm, check initial [project](https:/
 
 ### Directives
 
-No directives yet.
+Revision 110 of chrome browser introduces TLS ClientHello extensions random permutation, which makes fingerprinting irrelevant with this browser (firefox is planning to do the same).
+Using JA3_SORT_EXT cc macro during nginx configure invocation (--with-cc-opt='-DJA3_SORT_EXT') configures the module to sort TLS extensions in the JA3 string. The resulting fincgerprint is not compliant anymore with the JA3 algorithm (at this time of writing), but allow to get back effectiveness of fingerprinting.
 
 ### Variables
 
@@ -68,7 +69,7 @@ stream {
 
 ### Dependencies
 
-* [OpenSSL](https://github.com/openssl) - 1.1.1 (dev master version)
+* [OpenSSL](https://github.com/openssl) - 1.1.1 (branch OpenSSL_1_1_1-stable)
 
 The master version OpenSSL is required because this module fetches the
 extensions types declared at SSL/TLS Client Hello by using the new early

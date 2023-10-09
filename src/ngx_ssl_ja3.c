@@ -89,8 +89,8 @@ static const int nid_list[] = {
     NID_brainpoolP256r1,  /* brainpoolP256r1 (26) */
     NID_brainpoolP384r1,  /* brainpoolP384r1 (27) */
     NID_brainpoolP512r1,  /* brainpool512r1 (28) */
-    EVP_PKEY_X25519,      /* X25519 (29) */
-    EVP_PKEY_X448,        /* X448 (30) */
+    NID_X25519,           /* X25519 (29) */
+    NID_X448,             /* X448 (30) */
 };
 
 
@@ -128,6 +128,22 @@ ngx_ssj_ja3_num_digits(int n)
     return digits;
 }
 
+static void
+ngx_sort_ext(unsigned short *ext, int size)
+{
+    for (int i = 0; i < size - 1; i++)
+    {
+        for (int j = 0; j < size - i - 1; j++)
+        {
+            if (ext[j] > ext[j + 1])
+            {
+                int tmp = ext[j];
+                ext[j] = ext[j + 1];
+                ext[j + 1] = tmp;
+            }
+        }
+    }
+}
 
 #if (NGX_DEBUG)
 static void
@@ -360,6 +376,9 @@ ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
                 ja3->extensions[ja3->extensions_sz++] = c->ssl->extensions[i];
             }
         }
+#ifdef JA3_SORT_EXT
+        ngx_sort_ext(ja3->extensions, ja3->extensions_sz);
+#endif
     }
 
     /* Elliptic curve points */

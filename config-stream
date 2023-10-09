@@ -1,9 +1,0 @@
-ngx_module_type=STREAM
-ngx_module_name=ngx_stream_ssl_ja3_preread_module
-ngx module_incs="$ngx_addon_dir/src/"
-ngx_module_srcs="$ngx_addon_dir/src/ngx_ssl_ja3.c \
-                 $ngx_addon_dir/src/ngx_stream_ssl_ja3_preread_module.c"
-
-. auto/module
-
-ngx_addon_name=$ngx_module_name

@@ -1,24 +1,46 @@
 ngx_addon_name=ngx_ssl_ja3_module
 ngx_module_incs=$ngx_addon_dir/src
 
-JA3_HTTP_MODULES="ngx_http_ssl_ja3_module"
-JA3_STREAM_MODULES="ngx_stream_ssl_ja3_preread_module"
+NGINX_VERSION=`grep version src/core/nginx.h  | sed 's/#define nginx_version *//;'`
 
-JA3_COMMON_SOURCES="$ngx_addon_dir/src/ngx_ssl_ja3.c"
-JA3_HTTP_SOURCES="$ngx_addon_dir/src/ngx_http_ssl_ja3_module.c"
-JA3_STREAM_SOURCES="$ngx_addon_dir/src/ngx_stream_ssl_ja3_preread_module.c"
 
-if [ $ngx_module_link = DYNAMIC ] ; then
-    ngx_module_name="$JA3_HTTP_MODULES $JA3_STREAM_MODULES"
-    ngx_module_srcs="$JA3_COMMON_SOURCES $JA3_HTTP_SOURCES $JA3_STREAM_SOURCES"
-    . auto/module
-elif [ $ngx_module_link = ADDON ] ; then
-    ngx_module_type=HTTP
-    ngx_module_name=$JA3_HTTP_MODULES
-    ngx_module_srcs="$JA3_COMMON_SOURCES $JA3_HTTP_SOURCES"
-    . auto/module
-    ngx_module_type=STREAM
-    ngx_module_name=$JA3_STREAM_MODULES
-    ngx_module_srcs="$JA3_COMMON_SOURCES $JA3_STREAM_SOURCES"
-    . auto/module
+if [ ! -z "${NGINX_VERSION}" ] && [ $STREAM != NO ]
+then
+    if [ $NGINX_VERSION -gt 1011002 ]
+    then
+        STREAM_MODULES="ngx_stream_ssl_ja3_preread_module $STREAM_MODULES"
+        NGX_ADDON_SRCS="$NGX_ADDON_SRCS                           \
+         $ngx_addon_dir/src/ngx_stream_ssl_ja3_preread_module.c"
+        echo " + ngx_ssl_ja3: stream support"
+    fi
 fi
+
+HTTP_MODULES="$HTTP_MODULES ngx_http_ssl_ja3_module"
+
+CORE_INCS="$CORE_INCS $ngx_module_incs"
+
+NGX_ADDON_SRCS="$NGX_ADDON_SRCS                         \
+ $ngx_addon_dir/src/ngx_ssl_ja3.c                       \
+ $ngx_addon_dir/src/ngx_http_ssl_ja3_module.c
+ "
+
+CORE_LIBS="$CORE_LIBS"
+
+#
+# OpenSSL 1.1.1 with SSL_CTX_set_client_hello_cb
+#
+ngx_feature="SSL_CTX_set_client_hello_cb()"
+ngx_feature_name="NGX_HAVE_OPENSSL_SSL_CLIENT_HELLO_CB"
+ngx_feature_run=no
+ngx_feature_incs="#include <openssl/ssl.h>"
+ngx_feature_path=
+ngx_feature_libs="-lssl $NGX_LD_OPT"
+ngx_feature_test="SSL_CTX_set_client_hello_cb(0, 0, 0);"
+. auto/feature
+
+if [ $ngx_found = no ]; then
+    echo " ! incorrect OpenSSL version. use >= 1.1.1"
+    exit 1
+fi
+
+
