@@ -59,7 +59,7 @@ ngx_ssl_ja3_is_ext_greased(int id)
     return 0;
 }
 
-
+#ifndef OPENSSL_IS_BORINGSSL
 static const int nid_list[] = {
     NID_sect163k1,        /* sect163k1 (1) */
     NID_sect163r1,        /* sect163r1 (2) */
@@ -93,7 +93,6 @@ static const int nid_list[] = {
     EVP_PKEY_X448,        /* X448 (30) */
 };
 
-
 static unsigned short
 ngx_ssl_ja3_nid_to_cid(int nid)
 {
@@ -119,6 +118,7 @@ ngx_ssl_ja3_nid_to_cid(int nid)
 	 */
 	return (0x0FFFFFF & nid);
 }
+#endif
 
 static size_t
 ngx_ssj_ja3_num_digits(int n)
@@ -325,7 +325,10 @@ ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
     }
 
     /* SSLVersion - we want to use the version reported by the client*/
-    ja3->version = SSL_client_version(ssl);
+    ja3->version = SSL_version(ssl);
+    if (ja3->version == TLS1_3_VERSION) {
+        ja3->version = TLS1_2_VERSION;
+    }
 
     /* Cipher suites */
     ja3->ciphers = NULL;
@@ -363,7 +366,7 @@ ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
     }
 
     /* Elliptic curve points */
-    ja3->curves = c->ssl->curves;
+    ja3->curves = NULL;
     ja3->curves_sz = 0;
     if (c->ssl->curves && c->ssl->curves_sz) {
         len = c->ssl->curves_sz * sizeof(int);
@@ -374,7 +377,11 @@ ngx_ssl_ja3(ngx_connection_t *c, ngx_pool_t *pool, ngx_ssl_ja3_t *ja3) {
         for (i = 0; i < c->ssl->curves_sz; i++) {
             us = ntohs(c->ssl->curves[i]);
             if (! ngx_ssl_ja3_is_ext_greased(us)) {
+#ifdef OPENSSL_IS_BORINGSSL
+                ja3->curves[ja3->curves_sz++] = c->ssl->curves[i];
+#else
                 ja3->curves[ja3->curves_sz++] = ngx_ssl_ja3_nid_to_cid(c->ssl->curves[i]);
+#endif
             }
         }
     }

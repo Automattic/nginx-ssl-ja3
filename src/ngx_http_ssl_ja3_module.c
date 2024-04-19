@@ -177,4 +177,3 @@ ngx_http_ssl_ja3_init(ngx_conf_t *cf)
 
     return NGX_OK;
 }
-

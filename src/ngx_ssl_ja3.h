@@ -32,13 +32,13 @@ typedef struct ngx_ssl_ja3_s {
     int             version;
 
     size_t          ciphers_sz;
-    unsigned short *ciphers;
+    unsigned short  *ciphers;
 
     size_t          extensions_sz;
-    unsigned short *extensions;
+    int            *extensions;
 
     size_t          curves_sz;
-    unsigned short *curves;
+    int            *curves;
 
     size_t          point_formats_sz;
     unsigned char  *point_formats;
